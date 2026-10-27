@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fixed Deposit Ledger — FD vs Savings Calculator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Special+Elite&display=swap');
+
+:root{
+  --paper:#F1E9D2;
+  --paper-deep:#E7DCB8;
+  --rule:#cabb8e;
+  --rule-soft:#ddd2ab;
+  --ink:#1E2A38;
+  --ink-soft:#5a6472;
+  --red:#A63A2E;
+  --green:#2E6B4F;
+  --gold:#a5730f;
+  --navy:#1F3A5F;
+  --card:#FBF7EA;
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+body{
+  background-image:
+    repeating-linear-gradient(
+      var(--paper) 0px, var(--paper) 30px,
+      var(--rule-soft) 30px, var(--rule-soft) 31px
+    );
+  background-position: 0 78px;
+}
+
+.holes{
+  position:fixed;
+  left:6px;
+  top:0;
+  bottom:0;
+  width:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-evenly;
+  align-items:center;
+  pointer-events:none;
+  z-index:0;
+}
+.holes span{
+  width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fdfaf0, var(--paper-deep) 70%);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+.page{
+  position:relative;
+  max-width:720px;
+  margin:0 auto;
+  padding: 28px 22px 60px 34px;
+  border-left: 3px solid var(--red);
+  margin-left: 22px;
+  min-height:100vh;
+}
+
+@media (max-width:480px){
+  .page{ margin-left:14px; padding-left:20px; padding-right:14px;}
+  .holes{display:none;}
+}
+
+header.masthead{
+  padding-bottom:18px;
+  margin-bottom:6px;
+}
+.eyebrow-top{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--red);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.eyebrow-top::before{
+  content:"";
+  width:7px;height:7px;
+  background:var(--red);
+  border-radius:50%;
+  display:inline-block;
+}
+h1{
+  font-family:'Source Serif 4', serif;
+  font-weight:700;
+  font-size:clamp(28px,6vw,40px);
+  line-height:1.05;
+  margin:8px 0 6px;
+  letter-spacing:-0.01em;
+}
+.sub{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  color:var(--ink-soft);
+  border-top:1px dashed var(--rule);
+  padding-top:10px;
+  margin-top:12px;
+}
+
+.section{
+  margin: 30px 0;
+}
+.section-head{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  margin-bottom:14px;
+}
+.num{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  color:var(--paper);
+  background:var(--navy);
+  padding:2px 7px;
+  border-radius:2px;
+  letter-spacing:.05em;
+}
+.section-title{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink);
+  font-weight:600;
+}
+
+/* bank stamps */
+.bank-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+@media (min-width:560px){
+  .bank-grid{grid-template-columns:repeat(4,1fr);}
+}
+.bank-stamp{
+  font-family:'Special Elite', 'IBM Plex Mono', monospace;
+  cursor:pointer;
+  background:var(--card);
+  border:2px solid var(--rule);
+  border-radius:8px;
+  padding:14px 8px;
+  text-align:center;
+  color:var(--ink-soft);
+  transition: all .15s ease;
+  user-select:none;
+}
+.bank-stamp .bs-short{
+  display:block;
+  font-size:19px;
+  letter-spacing:.03em;
+  color:inherit;
+}
+.bank-stamp .bs-full{
+  display:block;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:9.5px;
+  letter-spacing:.03em;
+  margin-top:4px;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+}
+.bank-stamp:hover{ border-color:var(--navy); }
+.bank-stamp.active{
+  border-color:var(--red);
+  color:var(--red);
+  background:#fffaf0;
+  transform:rotate(-1.5deg) scale(1.03);
+  box-shadow: 0 2px 0 var(--red);
+}
+.bank-stamp.active .bs-full{ color:var(--red); opacity:.75; }
+
+/* toggle */
+.toggle-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.toggle-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  padding:9px 16px;
+  border:1.5px solid var(--rule);
+  border-radius:20px;
+  background:var(--card);
+  cursor:pointer;
+  color:var(--ink-soft);
+  transition:.15s;
+}
+.toggle-btn.active{
+  background:var(--navy);
+  border-color:var(--navy);
+  color:#fdf9ec;
+}
+
+/* fields */
+.field-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.amount-wrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--card);
+  border:1.5px solid var(--rule);
+  border-radius:8px;
+  padding:8px 14px;
+}
+.rupee{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:20px;
+  color:var(--ink-soft);
+}
+.amount-wrap input[type=number]{
+  border:none;
+  background:transparent;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:22px;
+  font-weight:600;
+  color:var(--ink);
+  width:100%;
+  outline:none;
+}
+input[type=range]{
+  width:100%;
+  accent-color:var(--navy);
+  margin-top:2px;
+}
+.range-labels{
+  display:flex;
+  justify-content:space-between;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10.5px;
+  color:var(--ink-soft);
+}
+
+.tenure-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.tenure-field{
+  background:var(--card);
+  border:1.5px solid var(--rule);
+  border-radius:8px;
+  padding:10px 12px;
+  text-align:center;
+}
+.tenure-field label{
+  display:block;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:9.5px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin-bottom:4px;
+}
+.tenure-field input{
+  width:100%;
+  border:none;
+  background:transparent;
+  text-align:center;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:20px;
+  font-weight:600;
+  color:var(--ink);
+  outline:none;
+}
+
+.tenure-summary{
+  margin-top:12px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  color:var(--ink-soft);
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 16px;
+}
+.tenure-summary b{ color:var(--ink); }
+.slab-tag{
+  display:inline-block;
+  background:#eee3c0;
+  border:1px solid var(--rule);
+  border-radius:4px;
+  padding:2px 8px;
+  color:var(--navy);
+  font-weight:600;
+}
+
+.bonus-note{
+  margin-top:10px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  background:#fff3d6;
+  border:1px dashed var(--gold);
+  color:#7a5307;
+  padding:9px 12px;
+  border-radius:6px;
+  display:none;
+}
+.bonus-note.show{display:block;}
+
+/* results */
+.result-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+@media (min-width:560px){
+  .result-grid{grid-template-columns:1fr 1fr;}
+}
+.result-card{
+  background:var(--card);
+  border:1.5px solid var(--rule);
+  border-radius:10px;
+  padding:16px 18px;
+  position:relative;
+}
+.result-card.fd{ border-color:var(--gold); }
+.rc-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10.5px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.rc-label.fd-label{ color:var(--gold); }
+.rc-amount{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:clamp(22px,5.5vw,28px);
+  font-weight:700;
+  margin:6px 0 4px;
+  color:var(--ink);
+}
+.rc-rate{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:12px;
+  color:var(--ink-soft);
+}
+.rc-bar-track{
+  margin-top:12px;
+  height:8px;
+  background:var(--rule-soft);
+  border-radius:4px;
+  overflow:hidden;
+}
+.rc-bar-fill{
+  height:100%;
+  border-radius:4px;
+  transition: width .4s ease;
+}
+.result-card.savings .rc-bar-fill{ background:var(--ink-soft); }
+.result-card.fd .rc-bar-fill{ background:var(--gold); }
+
+.stamp-diff{
+  margin: 20px auto 4px;
+  max-width:320px;
+  border:2.5px dashed var(--red);
+  border-radius:50%;
+  color:var(--red);
+  font-family:'Special Elite', monospace;
+  text-align:center;
+  padding: 20px 18px;
+  transform: rotate(-3deg);
+  background: rgba(166,58,46,0.03);
+}
+.stamp-diff .sd-top{
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.stamp-diff .sd-amt{
+  font-size:clamp(20px,5vw,26px);
+  margin:4px 0;
+  font-weight:700;
+}
+.stamp-diff .sd-bottom{
+  font-size:10.5px;
+  letter-spacing:.06em;
+}
+
+/* rate table */
+.rate-table-wrap{
+  overflow-x:auto;
+  border:1.5px solid var(--rule);
+  border-radius:8px;
+  background:var(--card);
+}
+table.rate-table{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  min-width:480px;
+}
+table.rate-table th{
+  text-align:left;
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  background:var(--paper-deep);
+  padding:9px 12px;
+  position:sticky; top:0;
+}
+table.rate-table td{
+  padding:8px 12px;
+  border-top:1px solid var(--rule-soft);
+  color:var(--ink);
+}
+table.rate-table tr.match td{
+  background:#fff3d6;
+  font-weight:700;
+}
+table.rate-table tr.special td{
+  color:var(--gold);
+}
+.badge-star{ color:var(--gold); }
+
+footer.notes{
+  margin-top:36px;
+  padding-top:16px;
+  border-top:1px dashed var(--rule);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:10.5px;
+  line-height:1.7;
+  color:var(--ink-soft);
+}
+footer.notes strong{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="holes">
+  <span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow-top">Passbook Estimate · India</div>
+    <h1>Fixed Deposit Ledger</h1>
+    <div class="sub">Enter what you'd deposit, choose a bank, and see how much more an FD earns you than leaving the same money in a savings account.</div>
+  </header>
+
+  <!-- 01 BANK -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">01</span>
+      <span class="section-title">Choose your bank</span>
+    </div>
+    <div class="bank-grid" id="bankGrid"></div>
+  </div>
+
+  <!-- 02 DEPOSITOR -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">02</span>
+      <span class="section-title">Depositor type</span>
+    </div>
+    <div class="toggle-row" id="depositorToggle">
+      <button class="toggle-btn active" data-type="gen">General citizen</button>
+      <button class="toggle-btn" data-type="sr">Senior citizen (60+)</button>
+    </div>
+  </div>
+
+  <!-- 03 PRINCIPAL -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">03</span>
+      <span class="section-title">Principal amount</span>
+    </div>
+    <div class="field-row">
+      <div class="amount-wrap">
+        <span class="rupee">₹</span>
+        <input type="number" id="principalInput" value="100000" min="1000" step="1000">
+      </div>
+      <input type="range" id="principalSlider" min="1000" max="5000000" step="1000" value="100000">
+      <div class="range-labels"><span>₹1,000</span><span>₹50,00,000</span></div>
+    </div>
+  </div>
+
+  <!-- 04 TENURE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">04</span>
+      <span class="section-title">Tenure</span>
+    </div>
+    <div class="tenure-grid">
+      <div class="tenure-field">
+        <label>Years</label>
+        <input type="number" id="years" value="1" min="0" max="10">
+      </div>
+      <div class="tenure-field">
+        <label>Months</label>
+        <input type="number" id="months" value="0" min="0" max="11">
+      </div>
+      <div class="tenure-field">
+        <label>Days</label>
+        <input type="number" id="days" value="0" min="0" max="30">
+      </div>
+    </div>
+    <div class="tenure-summary">
+      <span>Total tenure: <b id="totalDaysLabel">365 days</b></span>
+      <span>Matched slab: <span class="slab-tag" id="matchedSlabTag">—</span></span>
+    </div>
+    <div class="bonus-note" id="bonusNote"></div>
+  </div>
+
+  <!-- 05 RESULT -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">05</span>
+      <span class="section-title">Savings vs Fixed Deposit</span>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-card savings">
+        <div class="rc-label">If left in savings a/c</div>
+        <div class="rc-amount" id="savingsAmount">₹0</div>
+        <div class="rc-rate" id="savingsRateLine">at 2.50% p.a.</div>
+        <div class="rc-bar-track"><div class="rc-bar-fill" id="savingsBar" style="width:0%"></div></div>
+      </div>
+      <div class="result-card fd">
+        <div class="rc-label fd-label">If placed in fixed deposit</div>
+        <div class="rc-amount" id="fdAmount">₹0</div>
+        <div class="rc-rate" id="fdRateLine">at 0% p.a.</div>
+        <div class="rc-bar-track"><div class="rc-bar-fill" id="fdBar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="stamp-diff">
+      <div class="sd-top">FD earns you extra</div>
+      <div class="sd-amt" id="diffAmount">₹0</div>
+      <div class="sd-bottom" id="diffPct">+0% more than savings, same tenure</div>
+    </div>
+  </div>
+
+  <!-- RATE CARD -->
+  <div class="section">
+    <div class="section-head">
+      <span class="num">★</span>
+      <span class="section-title" id="rateCardTitle">Full rate card</span>
+    </div>
+    <div class="rate-table-wrap">
+      <table class="rate-table">
+        <thead>
+          <tr><th>Tenure slab</th><th>General</th><th>Senior citizen</th></tr>
+        </thead>
+        <tbody id="rateTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="notes">
+    <strong>How this is calculated —</strong> Both figures assume quarterly compounding (the standard method for cumulative/reinvestment FDs in India), applied to the savings balance too, so the comparison is like-for-like for the same money over the same tenure.<br><br>
+    <strong>About the rates —</strong> Reference rates shown are indicative, sourced from published bank rate cards as of August 2026, for domestic deposits below ₹3 crore. Banks revise FD and savings rates periodically in line with RBI policy — always confirm current rates on the bank's own website or app before booking.<br><br>
+    <strong>Tax note —</strong> FD interest is taxable at your slab rate. TDS applies once interest crosses ₹40,000 a year (₹50,000 for senior citizens) per bank. This tool does not account for tax, penalties for premature withdrawal, or minimum-deposit rules — it's for estimation only, not financial advice.
+  </footer>
+
+</div>
+
+<script>
+const BANKS = {
+  sbi: {
+    name: "State Bank of India", short: "SBI",
+    savingsRate: 2.50,
+    slabs: [
+      {min:7,max:45,label:"7 – 45 days",gen:3.05,sr:3.55},
+      {min:46,max:179,label:"46 – 179 days",gen:4.90,sr:5.40},
+      {min:180,max:210,label:"180 – 210 days",gen:5.65,sr:6.15},
+      {min:211,max:364,label:"211 days – <1 year",gen:5.90,sr:6.40},
+      {min:365,max:729,label:"1 year – <2 years",gen:6.25,sr:6.75},
+      {min:730,max:1094,label:"2 years – <3 years",gen:6.40,sr:6.90},
+      {min:1095,max:1824,label:"3 years – <5 years",gen:6.30,sr:6.80},
+      {min:1825,max:3650,label:"5 years – 10 years",gen:6.05,sr:7.05},
+    ],
+    special: [
+      {days:444,label:"Amrit Vrishti — 444 days",gen:6.45,sr:6.95}
+    ]
+  },
+  hdfc: {
+    name: "HDFC Bank", short: "HDFC",
+    savingsRate: 2.50,
+    slabs: [
+      {min:7,max:14,label:"7 – 14 days",gen:2.75,sr:3.25},
+      {min:15,max:29,label:"15 – 29 days",gen:2.75,sr:3.25},
+      {min:30,max:45,label:"30 – 45 days",gen:3.25,sr:3.75},
+      {min:46,max:60,label:"46 – 60 days",gen:4.25,sr:4.75},
+      {min:61,max:89,label:"61 – 89 days",gen:4.25,sr:4.75},
+      {min:90,max:182,label:"90 days – 6 months",gen:4.25,sr:4.75},
+      {min:183,max:274,label:"6m 1d – 9 months",gen:5.50,sr:6.00},
+      {min:275,max:364,label:"9m 1d – <1 year",gen:5.75,sr:6.25},
+      {min:365,max:454,label:"1 year – <15 months",gen:6.25,sr:6.75},
+      {min:455,max:545,label:"15 months – <18 months",gen:6.35,sr:6.85},
+      {min:546,max:729,label:"18 months – 2 years",gen:6.45,sr:6.95},
+      {min:730,max:1095,label:"2y 1d – 3 years",gen:6.45,sr:6.95},
+      {min:1096,max:1673,label:"3y 1d – <4y 7m",gen:6.50,sr:7.00},
+      {min:1674,max:1826,label:"4y 7m – 5 years",gen:6.40,sr:6.90},
+      {min:1827,max:3650,label:"5y 1d – 10 years",gen:6.15,sr:6.65},
+    ],
+    special: []
+  },
+  indianbank: {
+    name: "Indian Bank", short: "Indian Bank",
+    savingsRate: 2.50,
+    slabs: [
+      {min:7,max:14,label:"7 – 14 days",gen:2.80,sr:2.80},
+      {min:15,max:29,label:"15 – 29 days",gen:2.80,sr:3.30},
+      {min:30,max:45,label:"30 – 45 days",gen:3.00,sr:3.50},
+      {min:46,max:90,label:"46 – 90 days",gen:3.25,sr:3.75},
+      {min:91,max:120,label:"91 – 120 days",gen:3.50,sr:4.00},
+      {min:121,max:180,label:"121 – 180 days",gen:3.85,sr:4.35},
+      {min:181,max:273,label:"181 days – <9 months",gen:4.50,sr:5.00},
+      {min:274,max:364,label:"9 months – <1 year",gen:4.75,sr:4.75},
+      {min:365,max:365,label:"1 year",gen:6.10,sr:6.60},
+      {min:366,max:729,label:">1 year – <2 years",gen:6.20,sr:6.70},
+      {min:730,max:1094,label:"2 years – <3 years",gen:6.15,sr:6.65},
+      {min:1095,max:1824,label:"3 years – <5 years",gen:6.05,sr:6.55},
+      {min:1825,max:1825,label:"5 years",gen:6.00,sr:6.50},
+      {min:1826,max:3650,label:">5 years",gen:6.00,sr:6.75},
+    ],
+    special: [
+      {days:300,label:"IND Supreme 2.0 — 300 days",gen:6.20,sr:6.70},
+      {days:500,label:"IND Green — 500 days",gen:6.40,sr:6.90},
+      {days:555,label:"IND Grow — 555 days",gen:6.65,sr:7.15},
+      {days:777,label:"IND Prosper — 777 days",gen:6.60,sr:7.10},
+    ]
+  },
+  kotak: {
+    name: "Kotak Mahindra Bank", short: "Kotak",
+    savingsRate: 2.50,
+    slabs: [
+      {min:7,max:14,label:"7 – 14 days",gen:2.75,sr:3.25},
+      {min:15,max:30,label:"15 – 30 days",gen:2.75,sr:3.25},
+      {min:31,max:45,label:"31 – 45 days",gen:3.00,sr:3.50},
+      {min:46,max:90,label:"46 – 90 days",gen:3.50,sr:4.00},
+      {min:91,max:91,label:"91 days",gen:4.00,sr:4.50},
+      {min:92,max:179,label:"92 – 179 days",gen:4.25,sr:4.75},
+      {min:180,max:180,label:"180 days",gen:5.00,sr:5.50},
+      {min:181,max:269,label:"181 – 269 days",gen:5.50,sr:6.00},
+      {min:270,max:270,label:"270 days",gen:5.50,sr:6.00},
+      {min:271,max:363,label:"271 – 363 days",gen:6.00,sr:6.50},
+      {min:364,max:364,label:"364 days",gen:6.00,sr:6.50},
+      {min:365,max:454,label:"365 days – <15 months",gen:6.35,sr:6.85},
+      {min:455,max:545,label:"15 months – <18 months",gen:6.45,sr:6.95},
+      {min:546,max:729,label:"18 months – <2 years",gen:6.55,sr:7.05},
+      {min:730,max:1094,label:"2 years – <3 years",gen:6.80,sr:7.30},
+      {min:1095,max:1459,label:"3 years – <4 years",gen:6.40,sr:6.90},
+      {min:1460,max:1824,label:"4 years – <5 years",gen:6.40,sr:6.90},
+      {min:1825,max:3650,label:"5 years – 10 years",gen:6.25,sr:6.75},
+    ],
+    special: []
+  }
+};
+
+const state = { bank:'sbi', depositor:'gen', principal:100000, years:1, months:0, days:0 };
+
+const fmtINR = n => '₹' + Math.round(n).toLocaleString('en-IN');
+
+function totalDays(){
+  return Math.max(1, Math.round(state.years*365 + state.months*30 + state.days));
+}
+
+function findSlab(bank, days){
+  return bank.slabs.find(s => days >= s.min && days <= s.max) || bank.slabs[bank.slabs.length-1];
+}
+
+function nearestSpecial(bank, days){
+  let best = null, bestDiff = Infinity;
+  bank.special.forEach(sp=>{
+    const diff = Math.abs(sp.days - days);
+    if(diff <= 20 && diff < bestDiff){ best = sp; bestDiff = diff; }
+  });
+  return best;
+}
+
+function quarterlyMaturity(principal, ratePct, days){
+  const n = 4, t = days/365;
+  return principal * Math.pow(1 + (ratePct/100)/n, n*t);
+}
+
+function buildBankGrid(){
+  const grid = document.getElementById('bankGrid');
+  grid.innerHTML = '';
+  Object.keys(BANKS).forEach(key=>{
+    const b = BANKS[key];
+    const el = document.createElement('div');
+    el.className = 'bank-stamp' + (key===state.bank ? ' active':'');
+    el.innerHTML = `<span class="bs-short">${b.short}</span><span class="bs-full">${b.name}</span>`;
+    el.addEventListener('click', ()=>{ state.bank = key; render(); });
+    grid.appendChild(el);
+  });
+}
+
+function buildRateTable(){
+  const bank = BANKS[state.bank];
+  document.getElementById('rateCardTitle').textContent = bank.name + ' — full rate card';
+  const days = totalDays();
+  const matchedSlab = findSlab(bank, days);
+  const tbody = document.getElementById('rateTableBody');
+  tbody.innerHTML = '';
+  bank.slabs.forEach(s=>{
+    const tr = document.createElement('tr');
+    if(s === matchedSlab) tr.classList.add('match');
+    tr.innerHTML = `<td>${s.label}</td><td>${s.gen.toFixed(2)}%</td><td>${s.sr.toFixed(2)}%</td>`;
+    tbody.appendChild(tr);
+  });
+  bank.special.forEach(sp=>{
+    const tr = document.createElement('tr');
+    tr.classList.add('special');
+    tr.innerHTML = `<td>☆ ${sp.label}</td><td>${sp.gen.toFixed(2)}%</td><td>${sp.sr.toFixed(2)}%</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function render(){
+  buildBankGrid();
+
+  const bank = BANKS[state.bank];
+  const days = totalDays();
+  const isSr = state.depositor === 'sr';
+
+  document.getElementById('totalDaysLabel').textContent = days.toLocaleString('en-IN') + ' days';
+
+  const slab = findSlab(bank, days);
+  const rate = isSr ? slab.sr : slab.gen;
+  document.getElementById('matchedSlabTag').textContent = slab.label + ' @ ' + rate.toFixed(2) + '%';
+
+  const special = nearestSpecial(bank, days);
+  const bonusNote = document.getElementById('bonusNote');
+  if(special){
+    const srate = isSr ? special.sr : special.gen;
+    bonusNote.classList.add('show');
+    bonusNote.innerHTML = `★ Close to a special scheme: <b>${special.label}</b> pays ${srate.toFixed(2)}% — adjust tenure to exactly ${special.days} days to qualify.`;
+  } else {
+    bonusNote.classList.remove('show');
+    bonusNote.innerHTML = '';
+  }
+
+  const principal = state.principal;
+  const savingsRate = bank.savingsRate;
+  const savingsMaturity = quarterlyMaturity(principal, savingsRate, days);
+  const fdMaturity = quarterlyMaturity(principal, rate, days);
+
+  document.getElementById('savingsAmount').textContent = fmtINR(savingsMaturity);
+  document.getElementById('savingsRateLine').textContent = `at ${savingsRate.toFixed(2)}% p.a., ${bank.short} savings a/c`;
+  document.getElementById('fdAmount').textContent = fmtINR(fdMaturity);
+  document.getElementById('fdRateLine').textContent = `at ${rate.toFixed(2)}% p.a. (${isSr?'senior citizen':'general'}), ${bank.short} FD`;
+
+  const maxAmt = Math.max(savingsMaturity, fdMaturity, principal);
+  document.getElementById('savingsBar').style.width = (savingsMaturity/maxAmt*100).toFixed(1)+'%';
+  document.getElementById('fdBar').style.width = (fdMaturity/maxAmt*100).toFixed(1)+'%';
+
+  const diff = fdMaturity - savingsMaturity;
+  const diffPct = (diff / savingsMaturity) * 100;
+  document.getElementById('diffAmount').textContent = fmtINR(diff) + ' more';
+  document.getElementById('diffPct').textContent = `+${diffPct.toFixed(2)}% more than savings, same ${days.toLocaleString('en-IN')}-day tenure`;
+
+  buildRateTable();
+}
+
+// wire up inputs
+document.getElementById('depositorToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('.toggle-btn');
+  if(!btn) return;
+  document.querySelectorAll('#depositorToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.depositor = btn.dataset.type;
+  render();
+});
+
+const principalInput = document.getElementById('principalInput');
+const principalSlider = document.getElementById('principalSlider');
+principalInput.addEventListener('input', ()=>{
+  let v = parseFloat(principalInput.value) || 0;
+  state.principal = v;
+  if(v <= 5000000) principalSlider.value = v;
+  render();
+});
+principalSlider.addEventListener('input', ()=>{
+  state.principal = parseFloat(principalSlider.value);
+  principalInput.value = state.principal;
+  render();
+});
+
+['years','months','days'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', e=>{
+    state[id] = parseFloat(e.target.value) || 0;
+    render();
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>
