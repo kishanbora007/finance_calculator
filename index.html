@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance Calculators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#F3F1EC;
+    --surface:#FFFFFF;
+    --fg:#211D18;
+    --fg-muted:#6B6456;
+    --accent:#A8512C;
+    --border:#DEDACF;
+    --shadow:0 1px 2px rgba(30,25,15,.06), 0 10px 28px rgba(30,25,15,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#19160F;
+      --surface:#231F17;
+      --fg:#EFEAE0;
+      --fg-muted:#A79E8C;
+      --accent:#E08457;
+      --border:#352F23;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px rgba(0,0,0,.4);
+    }
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    line-height:1.55;
+    padding:48px 20px;
+  }
+  .wrap{ max-width:720px; margin:0 auto; }
+  .eyebrow{
+    text-transform:uppercase; letter-spacing:.12em; font-size:.72rem;
+    color:var(--fg-muted); margin:0 0 10px;
+  }
+  h1{
+    font-family:'Fraunces', Georgia, serif; font-weight:600;
+    font-size:clamp(2rem, 6vw, 2.8rem); line-height:1.1; margin:0 0 14px;
+  }
+  .lede{ color:var(--fg-muted); max-width:52ch; margin:0 0 44px; font-size:1.02rem; }
+
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:560px){ .cards{ grid-template-columns:1fr; } }
+
+  .card{
+    display:block; text-decoration:none; color:inherit;
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:26px 24px; box-shadow:var(--shadow);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-2px); }
+  .card:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+
+  .card-num{ font-family:'IBM Plex Sans', sans-serif; font-size:.75rem; color:var(--fg-muted); margin-bottom:10px; }
+  .card h2{
+    font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:1.3rem;
+    margin:0 0 8px; text-wrap:balance;
+  }
+  .card p{ margin:0 0 16px; color:var(--fg-muted); font-size:.92rem; }
+  .card-open{ color:var(--accent); font-size:.86rem; font-weight:500; }
+
+  footer{ margin-top:48px; color:var(--fg-muted); font-size:.82rem; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">Personal finance</p>
+    <h1>Finance Calculators</h1>
+    <p class="lede">Two calculators to help you decide what works better for your money — what a home loan will cost you each month, and what a fixed deposit will earn you over time.</p>
+
+    <div class="cards">
+      <a class="card" href="home-loan-calculator.html">
+        <p class="card-num">01</p>
+        <h2>Home Loan EMI</h2>
+        <p>Work out the monthly instalment and total interest on a home loan.</p>
+        <span class="card-open">Open →</span>
+      </a>
+      <a class="card" href="fd-ledger-calculator.html">
+        <p class="card-num">02</p>
+        <h2>FD Interest</h2>
+        <p>Work out the maturity value and interest on a fixed deposit.</p>
+        <span class="card-open">Open →</span>
+      </a>
+    </div>
+
+    <footer>More calculators get added here over time.</footer>
+  </div>
+</body>
+</html>
